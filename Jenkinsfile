@@ -23,33 +23,20 @@ pipeline {
             }
         }
 
-        stage('Build') {
-    steps {
-                // Install PHP dependencies
-                sh 'composer install --no-interaction --prefer-dist'
-
-                // Clear config after dependencies are installed
-                sh 'php artisan config:clear'
-
-                // Install Node.js dependencies (if needed)
-                sh 'npm install'
-
-                // Build frontend (if applicable)
-                sh 'npm run build'
-            }
+    stage('Build') {
+        steps {
+            sh 'composer install --no-interaction --prefer-dist'
+            sh 'cp .env.example .env || true'     // copy if not exist
+            sh 'php artisan key:generate'         // generate APP_KEY
+            sh 'php artisan config:clear'
         }
+    }
 
-        stage('Test') {
-            steps {
-                script {
-                    if (fileExists('./vendor/bin/pest')) {
-                        sh './vendor/bin/pest'
-                    } else {
-                        error("Pest is not installed. Run composer install first or check your dependencies.")
-                    }
-                }
-            }
+    stage('Test') {
+        steps {
+            sh './vendor/bin/pest'
         }
+    }
 
         stage('Deploy') {
             when {
