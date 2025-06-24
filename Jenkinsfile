@@ -37,16 +37,6 @@ pipeline {
                 sh './vendor/bin/pest'
             }
         }
-
-        stage('Deploy') {
-            when {
-                expression { currentBuild.currentResult == 'SUCCESS' }
-            }
-            steps {
-                // Run Ansible playbook for deployment
-                sh 'ansible-playbook -i inventory/webserver.ini laravel-deployment.yaml'
-            }
-        }
     }
 
     post {
