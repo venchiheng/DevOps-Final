@@ -1,0 +1,58 @@
+- name: Laravel App Deployment & Backup Tasks
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    pod_name: laravel-app-59c45f8c-zchn2
+    container_name: web-server
+    project_path: /var/www/html
+    mysql_container_name: mysql-db
+    mysql_root_password: "Hello@123"
+    mysql_database: "venchiheng-db"
+
+  tasks:
+    - name: Add Git safe.directory config (fixes ownership issue)
+      shell: |
+        kubectl exec {{ pod_name }} -c {{ container_name }} -- \
+        git config --global --add safe.directory {{ project_path }}
+
+    - name: Reset Git and pull latest code
+      shell: |
+        kubectl exec {{ pod_name }} -c {{ container_name }} -- bash -c "
+          cd {{ project_path }} && \
+          git reset --hard && git clean -fd && \
+          git branch --set-upstream-to=origin/main main || true && \
+          git pull origin main
+        "
+
+    - name: Run Composer install
+      shell: |
+        kubectl exec {{ pod_name }} -c {{ container_name }} -- bash -c "
+          cd {{ project_path }} && composer install
+        "
+
+    - name: Run NPM install and build
+      shell: |
+        kubectl exec {{ pod_name }} -c {{ container_name }} -- bash -c "
+          cd {{ project_path }} && npm install && npm run build
+        "
+
+    - name: Run Laravel test with SQLite
+      shell: |
+        kubectl exec {{ pod_name }} -c {{ container_name }} -- bash -c "
+          cd {{ project_path }} && php artisan test
+        "
+
+    - name: Dump MySQL database
+      shell: |
+        kubectl exec {{ pod_name }} -c {{ mysql_container_name }} -- bash -c "
+          mysqldump -h127.0.0.1 -uroot -p'{{ mysql_root_password }}' {{ mysql_database }}
+        "
+      register: mysql_dump_output
+      delegate_to: localhost
+
+    - name: Save MySQL dump to local file
+      copy:
+        content: "{{ mysql_dump_output.stdout }}"
+        dest: "./backup.sql"

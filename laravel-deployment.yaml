@@ -18,9 +18,7 @@ spec:
         ports:
         - containerPort: 8080   # Website
         - containerPort: 22     # SSH
-        volumeMounts:
-        - name: laravel-code
-          mountPath: /var/www/html
+        # Removed volumeMount and startup command to let image files be visible
       - name: mysql-db
         image: mysql:8.0
         env:
@@ -34,7 +32,5 @@ spec:
         - name: mysql-data
           mountPath: /var/lib/mysql
       volumes:
-      - name: laravel-code
-        emptyDir: {}
       - name: mysql-data
         emptyDir: {}
