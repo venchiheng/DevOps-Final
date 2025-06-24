@@ -41,8 +41,13 @@ pipeline {
 
         stage('Test') {
             steps {
-                // Your test commands here
-                sh './run_tests.sh'  // replace with your real test command
+                script {
+                    if (fileExists('./vendor/bin/pest')) {
+                        sh './vendor/bin/pest'
+                    } else {
+                        error("Pest is not installed. Run composer install first or check your dependencies.")
+                    }
+                }
             }
         }
 
