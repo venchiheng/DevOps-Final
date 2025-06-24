@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Email for CC on errors/success
-        CC_EMAIL = 'chiheng357@gmail.com'
+        CC_EMAIL = 'srengty@gmail.com'
     }
 
     triggers {
