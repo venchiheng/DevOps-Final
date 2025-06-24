@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: laravel-app
+  template:
+    metadata:
+      labels:
+        app: laravel-app
+    spec:
+      containers:
+      - name: web-server
+        image: venchiheng/laravel-nginx-php:latest
+        ports:
+        - containerPort: 8080   # Website
+        - containerPort: 22     # SSH
+        volumeMounts:
+        - name: laravel-code
+          mountPath: /var/www/html
+      - name: mysql-db
+        image: mysql:8.0
+        env:
+        - name: MYSQL_DATABASE
+          value: "venchiheng-db"
+        - name: MYSQL_ROOT_PASSWORD
+          value: "Hello@123"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: laravel-code
+        emptyDir: {}
+      - name: mysql-data
+        emptyDir: {}
