@@ -23,20 +23,20 @@ pipeline {
             }
         }
 
-    stage('Build') {
-        steps {
-            sh 'composer install --no-interaction --prefer-dist'
-            sh 'cp .env.example .env || true'     // copy if not exist
-            sh 'php artisan key:generate'         // generate APP_KEY
-            sh 'php artisan config:clear'
+        stage('Build') {
+            steps {
+                sh 'composer install --no-interaction --prefer-dist'
+                sh 'cp .env.example .env || true'     // copy if not exist
+                sh 'php artisan key:generate'         // generate APP_KEY
+                sh 'php artisan config:clear'
+            }
         }
-    }
 
-    stage('Test') {
-        steps {
-            sh './vendor/bin/pest'
+        stage('Test') {
+            steps {
+                sh './vendor/bin/pest'
+            }
         }
-    }
 
         stage('Deploy') {
             when {
@@ -44,7 +44,7 @@ pipeline {
             }
             steps {
                 // Run Ansible playbook for deployment
-                sh 'ansible-playbook -i inventory/webserver.ini deploy.yml'
+                sh 'ansible-playbook -i inventory/webserver.ini laravel-deployment.yaml'
             }
         }
     }
