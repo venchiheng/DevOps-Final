@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Email for CC on errors
+        // Email for CC on errors/success
         CC_EMAIL = 'chiheng357@gmail.com'
     }
 
@@ -40,15 +40,27 @@ pipeline {
     }
 
     post {
-        failure {
+        success {
             script {
-                // Get the committer email from the last commit
                 def commitEmail = sh(script: "git log -1 --pretty=format:%ae", returnStdout: true).trim()
-
-                // Compose email recipients
                 def recipients = "${CC_EMAIL},${commitEmail}"
 
-                // Send email on failure
+                emailext (
+                    to: recipients,
+                    subject: "Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: """
+                        <p><b>Build succeeded</b> for <b>${env.JOB_NAME}</b> #${env.BUILD_NUMBER}.</p>
+                        <p>Check console output: <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></p>
+                    """,
+                    mimeType: 'text/html'
+                )
+            }
+        }
+        failure {
+            script {
+                def commitEmail = sh(script: "git log -1 --pretty=format:%ae", returnStdout: true).trim()
+                def recipients = "${CC_EMAIL},${commitEmail}"
+
                 emailext (
                     to: recipients,
                     subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
