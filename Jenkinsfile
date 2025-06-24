@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Email for CC on errors
-        CC_EMAIL = 'chiheng357@gmail.com'
+        CC_EMAIL = 'srengty@gmail.com'
     }
 
     triggers {
@@ -25,8 +25,10 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Your build commands here
-                sh './build.sh'  // replace with your real build command
+                sh 'php artisan config:clear'
+                sh 'composer install'
+                sh 'npm install'
+                sh 'npm run build'
             }
         }
 
