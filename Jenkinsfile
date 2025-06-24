@@ -24,10 +24,17 @@ pipeline {
         }
 
         stage('Build') {
-            steps {
+    steps {
+                // Install PHP dependencies
+                sh 'composer install --no-interaction --prefer-dist'
+
+                // Clear config after dependencies are installed
                 sh 'php artisan config:clear'
-                sh 'composer install'
+
+                // Install Node.js dependencies (if needed)
                 sh 'npm install'
+
+                // Build frontend (if applicable)
                 sh 'npm run build'
             }
         }
